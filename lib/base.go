@@ -36,22 +36,3 @@ type Caller interface {
 	//检查响应
 	CheckResp(req RawReq, resp RawResp) *CallResult
 }
-
-//TODO GoTickets like java Thread Pool or POSIX semaphore
-type GoTickets interface {
-	//获取一张票
-	Take()
-	//归还
-	Return()
-	//是否激活
-	Active() bool
-	//票总数
-	Total() uint32
-	Remainder() uint32
-}
-
-type myGoTickets struct {
-	total    uint32        //票的总数
-	ticketCh chan struct{} //票的容器
-	active   bool          //票池是否被激活
-}
