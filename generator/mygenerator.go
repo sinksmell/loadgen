@@ -3,8 +3,11 @@ package generator
 import (
 	"MyLoadGen/lib"
 	"context"
+	"errors"
+	"fmt"
 	"github.com/astaxie/beego/logs"
 	"math"
+	"sync/atomic"
 	"time"
 )
 
@@ -41,27 +44,33 @@ type myGenerator struct {
 	resultCh    chan *lib.CallResult //调用结果通道
 }
 
-func (mgt *myGenerator) Start() bool {
-	panic("implement me")
-}
-
 func (mgt *myGenerator) Stop() bool {
-	panic("implement me")
+	if !atomic.CompareAndSwapUint32(&mgt.status, STATUS_STARTED, STATUS_STOPPING) {
+		return false
+	}
+	mgt.cancelFunc()
+	for {
+		if atomic.LoadUint32(&mgt.status) == STATUS_STOPPED {
+			break
+		}
+		time.Sleep(time.Microsecond)
+	}
+	return false
 }
 
 func (mgt *myGenerator) Status() uint32 {
-	panic("implement me")
+	return atomic.LoadUint32(&mgt.status)
 }
 
 func (mgt *myGenerator) CallCount() int64 {
-	panic("implement me")
+	return atomic.LoadInt64(&mgt.callCount)
 }
 
 // 初始化载荷发生器。
 func (mgt *myGenerator) init() error {
-	//	var buf bytes.Buffer
+
 	logger.Informational("Initializing the load generator...")
-	//	buf.WriteString("Initializing the load generator...")
+
 	// 载荷的并发量 ≈ 载荷的响应超时时间 / 载荷的发送间隔时间
 	var total64 = int64(mgt.timeoutNS)/int64(1e9/mgt.lps) + 1
 	if total64 > math.MaxInt32 {
@@ -77,14 +86,6 @@ func (mgt *myGenerator) init() error {
 	//	buf.WriteString(fmt.Sprintf("Done. (concurrency=%d)", mgt.concurrency))
 	logger.Informational("Done. (concurrency=%d)", mgt.concurrency)
 	return nil
-}
-
-type ParamSet struct {
-	caller     lib.Caller
-	timeoutNS  time.Duration
-	lps        uint32
-	durationNS time.Duration
-	resultCh   chan *lib.CallResult
 }
 
 func (set *ParamSet) Check() error {
@@ -110,4 +111,189 @@ func NewGenerator(set ParamSet) (lib.Generator, error) {
 		return nil, err
 	}
 	return gen, nil
+}
+
+func (mgt *myGenerator) prepareToStop(ctxErr error) {
+	logger.Informational("Prepare to stop load generator (case:%s)...", ctxErr)
+	atomic.CompareAndSwapUint32(&mgt.status, STATUS_STARTED, STATUS_STOPPING)
+	logger.Informational("Closing result channel...")
+	close(mgt.resultCh)
+	atomic.StoreUint32(&mgt.status, STATUS_STOPPED)
+}
+
+func (mgt *myGenerator) genLoad(throttle <-chan time.Time) {
+
+	for {
+		select {
+		case <-mgt.ctx.Done():
+			mgt.prepareToStop(mgt.ctx.Err())
+			return
+		default:
+
+		}
+
+		if mgt.lps > 0 {
+			mgt.asyncCall()
+			select {
+			case <-throttle:
+			case <-mgt.ctx.Done():
+				mgt.prepareToStop(mgt.ctx.Err())
+				return
+			}
+		}
+	}
+}
+
+// asyncSend 会异步地调用承受方接口。
+func (mgt *myGenerator) asyncCall() {
+	mgt.tickets.Take()
+	go func() {
+		defer func() {
+			if p := recover(); p != nil {
+				err, ok := interface{}(p).(error)
+				var errMsg string
+				if ok {
+					errMsg = fmt.Sprintf("Async Call Panic! (error: %s)", err)
+				} else {
+					errMsg = fmt.Sprintf("Async Call Panic! (clue: %#v)", p)
+				}
+				logger.Emergency(errMsg)
+				result := &lib.CallResult{
+					ID:   -1,
+					Code: lib.RET_CODE_FATAL_CALL,
+					Msg:  errMsg}
+				mgt.sendResult(result)
+			}
+			mgt.tickets.Return()
+		}()
+		rawReq := mgt.caller.BuildReq()
+		// 调用状态：0-未调用或调用中；1-调用完成；2-调用超时。
+		var callStatus uint32
+		timer := time.AfterFunc(mgt.timeoutNS, func() {
+			if !atomic.CompareAndSwapUint32(&callStatus, 0, 2) {
+				return
+			}
+			result := &lib.CallResult{
+				ID:     rawReq.ID,
+				Req:    rawReq,
+				Code:   lib.RET_CODE_WARNING_CALL_TIMEOUT,
+				Msg:    fmt.Sprintf("Timeout! (expected: < %v)", mgt.timeoutNS),
+				Elapse: mgt.timeoutNS,
+			}
+			mgt.sendResult(result)
+		})
+		rawResp := mgt.callOne(&rawReq)
+		if !atomic.CompareAndSwapUint32(&callStatus, 0, 1) {
+			return
+		}
+		timer.Stop()
+		var result *lib.CallResult
+		if rawResp.Err != nil {
+			result = &lib.CallResult{
+				ID:     rawResp.ID,
+				Req:    rawReq,
+				Code:   lib.RET_CODE_ERROR_CALL,
+				Msg:    rawResp.Err.Error(),
+				Elapse: rawResp.Elapse}
+		} else {
+			result = mgt.caller.CheckResp(rawReq, *rawResp)
+			result.Elapse = rawResp.Elapse
+		}
+		mgt.sendResult(result)
+	}()
+}
+
+func (mgt *myGenerator) printIgnoredResult(result *lib.CallResult, cause string) {
+	resultMsg := fmt.Sprintf(
+		"ID=%d, Code=%d, Msg=%s, Elapse=%v",
+		result.ID, result.Code, result.Msg, result.Elapse)
+	logger.Warning("Ignored result: %s. (cause: %s)\n", resultMsg, cause)
+}
+
+//发送调用结果
+func (mgt *myGenerator) sendResult(result *lib.CallResult) bool {
+	if atomic.LoadUint32(&mgt.status) != STATUS_STARTED {
+		mgt.printIgnoredResult(result, "stopped load generator")
+		return false
+	}
+
+	select {
+	case mgt.resultCh <- result:
+		return true
+	default:
+		mgt.printIgnoredResult(result, "result channel is full")
+		return false
+	}
+}
+
+func (mgt *myGenerator) callOne(req *lib.RawReq) *lib.RawResp {
+	atomic.AddInt64(&mgt.callCount, 1)
+	if req == nil {
+		return &lib.RawResp{
+			ID:  -1,
+			Err: errors.New("invalid raw request"),
+		}
+	}
+
+	start := time.Now().UnixNano()
+	resp, err := mgt.caller.Caller(req.Req, mgt.timeoutNS)
+	end := time.Now().UnixNano()
+	elapsedTime := time.Duration(end - start)
+	var rawResp lib.RawResp
+	if err != nil {
+		errMsg := fmt.Sprintf("Sync Call Error:%s.", err)
+		rawResp = lib.RawResp{
+			ID:     rawResp.ID,
+			Err:    errors.New(errMsg),
+			Elapse: elapsedTime,
+		}
+
+	} else {
+		rawResp = lib.RawResp{
+			ID:     rawResp.ID,
+			Resp:   resp,
+			Elapse: elapsedTime,
+		}
+	}
+
+	return &rawResp
+}
+
+// Start 会启动载荷发生器。
+func (mgt *myGenerator) Start() bool {
+	logger.Informational("Starting load generator...")
+	// 检查是否具备可启动的状态，顺便设置状态为正在启动
+	if !atomic.CompareAndSwapUint32(
+		&mgt.status, STATUS_ORIGIN, STATUS_STARTING) {
+		if !atomic.CompareAndSwapUint32(
+			&mgt.status, STATUS_STOPPED, STATUS_STARTING) {
+			return false
+		}
+	}
+
+	// 设定节流阀。
+	var throttle <-chan time.Time
+	if mgt.lps > 0 {
+		interval := time.Duration(1e9 / mgt.lps)
+		logger.Informational("Setting throttle (%v)...", interval)
+		throttle = time.Tick(interval)
+	}
+
+	// 初始化上下文和取消函数。
+	mgt.ctx, mgt.cancelFunc = context.WithTimeout(
+		context.Background(), mgt.durationNS)
+
+	// 初始化调用计数。
+	mgt.callCount = 0
+
+	// 设置状态为已启动。
+	atomic.StoreUint32(&mgt.status, STATUS_STARTED)
+
+	go func() {
+		// 生成并发送载荷。
+		logger.Informational("Generating loads...")
+		mgt.genLoad(throttle)
+		logger.Informational("Stopped. (call count: %d)", mgt.callCount)
+	}()
+	return true
 }
