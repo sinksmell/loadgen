@@ -1,6 +1,7 @@
-package lib
+package request
 
 import (
+	. "MyLoadGen/lib"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -19,15 +20,15 @@ type MyCaller interface {
 	CheckResp(req RawReq, resp RawResp) *CallResult
 }
 
-type HttpRequest struct {
+type HttpPOSTRequest struct {
 	url string
 }
 
 func NewHttpRequest(url string) Caller {
-	return &HttpRequest{url: url}
+	return &HttpPOSTRequest{url: url}
 }
 
-func (httpreq *HttpRequest) BuildReq() RawReq {
+func (httpreq *HttpPOSTRequest) BuildReq() RawReq {
 	id := time.Now().UnixNano()
 	sreq := ServerReq{
 		ID: id,
@@ -46,11 +47,11 @@ func (httpreq *HttpRequest) BuildReq() RawReq {
 	return rawReq
 }
 
-func (httpreq *HttpRequest) Caller(req []byte, timeoutNs time.Duration) ([]byte, error) {
+func (httpreq *HttpPOSTRequest) Caller(req []byte, timeoutNs time.Duration) ([]byte, error) {
 	request, err := http.NewRequest("POST", httpreq.url, bytes.NewBuffer(req))
 	// req.Header.Set("X-Custom-Header", "myvalue")
 	request.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
+	client := &http.Client{Timeout: timeoutNs}
 	resp, err := client.Do(request)
 	if err != nil {
 		return nil, err
@@ -61,9 +62,10 @@ func (httpreq *HttpRequest) Caller(req []byte, timeoutNs time.Duration) ([]byte,
 	return data, err
 }
 
-func (httpreq *HttpRequest) CheckResp(rawReq RawReq, rawResp RawResp) *CallResult {
+func (httpreq *HttpPOSTRequest) CheckResp(rawReq RawReq, rawResp RawResp) *CallResult {
 	var commResult CallResult
-	commResult.ID = rawResp.ID
+	//commResult.ID = rawResp.ID
+	commResult.ID = rawReq.ID
 	commResult.Req = rawReq
 	commResult.Resp = rawResp
 	var sreq ServerReq

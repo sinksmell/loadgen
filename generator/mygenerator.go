@@ -99,12 +99,12 @@ func NewGenerator(set ParamSet) (lib.Generator, error) {
 	}
 
 	gen := &myGenerator{
-		caller:     set.caller,
-		timeoutNS:  set.timeoutNS,
-		lps:        set.lps,
-		durationNS: set.durationNS,
+		caller:     set.Caller,
+		timeoutNS:  set.TimeoutNS,
+		lps:        set.Lps,
+		durationNS: set.DurationNS,
 		status:     STATUS_ORIGIN,
-		resultCh:   set.resultCh,
+		resultCh:   set.ResultCh,
 	}
 
 	if err := gen.init(); err != nil {

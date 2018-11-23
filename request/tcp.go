@@ -1,6 +1,7 @@
-package lib
+package request
 
 import (
+	. "MyLoadGen/lib"
 	"bufio"
 	"bytes"
 	"encoding/json"
