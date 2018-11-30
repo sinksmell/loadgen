@@ -20,7 +20,6 @@ func main() {
 
 	flag.Parse()
 	logger := beego.BeeLogger
-	serverAddr := "http://127.0.0.1:8080"
 	//serverAddr := "http://www.baidu.com"
 	// 初始化载荷发生器。
 	tout, err := time.ParseDuration(*timeOut)
@@ -37,11 +36,11 @@ func main() {
 	pset := generator.NewParamSet(
 		//request.NewTCPComm(serverAddr),/*TCP 请求*/
 		//request.NewPostRequest(serverAddr), //post 请求
-		request.NewGetRequest(serverAddr), /*get请求*/
+		request.NewGetRequest(*url), /*get请求*/
 		tout,
 		uint32(*lps),
 		tm,
-		make(chan *lib.CallResult, 50))
+		make(chan *lib.CallResult, 100))
 
 	logger.Info("Initialize load generator (timeoutNS=%v, lps=%d, durationNS=%v)...",
 		pset.TimeoutNS, pset.Lps, pset.DurationNS)

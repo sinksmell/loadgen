@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="848655ac-094b-4a90-83a7-1c525075de4b" name="Default Changelist" comment="整理了文件结构，添加http Get测试方法，找到一处BUG">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generator/generator_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/generator/generator_test.go" afterDir="false" />
+    <list default="true" id="848655ac-094b-4a90-83a7-1c525075de4b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/request/getRequest.go" beforeDir="false" afterPath="$PROJECT_DIR$/request/getRequest.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/request/postRequest.go" beforeDir="false" afterPath="$PROJECT_DIR$/request/postRequest.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,15 +37,15 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="go" value="5515" />
+          <entry key="go" value="5521" />
           <entry key="md" value="36" />
-          <entry key="txt" value="105" />
+          <entry key="txt" value="141" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Go" value="5515" />
-          <entry key="PLAIN_TEXT" value="141" />
+          <entry key="Go" value="5521" />
+          <entry key="PLAIN_TEXT" value="177" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.go.postfix.template.usages.trigger">
@@ -86,10 +81,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="196">
-              <caret line="9" column="1" lean-forward="true" selection-start-line="9" selection-start-column="1" selection-end-line="9" selection-end-column="1" />
+            <state relative-caret-position="250">
+              <caret line="42" column="40" lean-forward="true" selection-start-line="42" selection-start-column="40" selection-end-line="42" selection-end-column="40" />
               <folding>
-                <element signature="e#14#121#0" expanded="true" />
+                <element signature="e#14#129#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -107,8 +102,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/request/getRequest.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-234">
-              <caret line="26" column="36" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
+            <state relative-caret-position="-190">
+              <caret line="28" column="36" selection-start-line="28" selection-start-column="36" selection-end-line="28" selection-end-column="36" />
               <folding>
                 <element signature="e#17#52#0" expanded="true" />
               </folding>
@@ -202,8 +197,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
+    <option name="y" value="47" />
     <option name="width" value="1600" />
-    <option name="height" value="900" />
+    <option name="height" value="822" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -221,6 +217,11 @@
               <item name="MyLoadGen" type="b2602c69:ProjectViewProjectNode" />
               <item name="MyLoadGen" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="MyLoadGen" type="b2602c69:ProjectViewProjectNode" />
+              <item name="MyLoadGen" type="462c0819:PsiDirectoryNode" />
+              <item name="bin" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -237,9 +238,11 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/bin/mac" />
+      <recent name="$PROJECT_DIR$/bin/windows" />
+      <recent name="$PROJECT_DIR$/bin/linux" />
+      <recent name="$PROJECT_DIR$/bin" />
       <recent name="$PROJECT_DIR$/request" />
-      <recent name="$PROJECT_DIR$/generator" />
-      <recent name="$PROJECT_DIR$/lib" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -373,6 +376,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1600" height="900" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18475452" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -386,7 +390,7 @@
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3292232" />
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.49445128" />
-      <window_info anchor="bottom" id="Terminal" order="9" visible="true" weight="0.324291" />
+      <window_info anchor="bottom" id="Terminal" order="9" visible="true" weight="0.49075216" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -430,7 +434,8 @@
     <MESSAGE value="add some methods" />
     <MESSAGE value="初步实现建立 http连接并且测试通过post方法进行json解析及返回测试" />
     <MESSAGE value="整理了文件结构，添加http Get测试方法，找到一处BUG" />
-    <option name="LAST_COMMIT_MESSAGE" value="整理了文件结构，添加http Get测试方法，找到一处BUG" />
+    <MESSAGE value="实现了对网站发起http get请求,并发地对网站进行压力测试" />
+    <option name="LAST_COMMIT_MESSAGE" value="实现了对网站发起http get请求,并发地对网站进行压力测试" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file:///usr/local/go/src/encoding/json/encode.go">
@@ -528,8 +533,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/request/getRequest.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-234">
-          <caret line="26" column="36" selection-start-line="26" selection-start-column="36" selection-end-line="26" selection-end-column="36" />
+        <state relative-caret-position="-190">
+          <caret line="28" column="36" selection-start-line="28" selection-start-column="36" selection-end-line="28" selection-end-column="36" />
           <folding>
             <element signature="e#17#52#0" expanded="true" />
           </folding>
@@ -562,10 +567,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="196">
-          <caret line="9" column="1" lean-forward="true" selection-start-line="9" selection-start-column="1" selection-end-line="9" selection-end-column="1" />
+        <state relative-caret-position="250">
+          <caret line="42" column="40" lean-forward="true" selection-start-line="42" selection-start-column="40" selection-end-line="42" selection-end-column="40" />
           <folding>
-            <element signature="e#14#121#0" expanded="true" />
+            <element signature="e#14#129#0" expanded="true" />
           </folding>
         </state>
       </provider>
