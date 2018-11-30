@@ -40,12 +40,8 @@
 
 -> % ./MyLoadGen -help 
 Usage of ./MyLoadGen:
-  -graceful
-        listen on open fd (after forking)
   -lps int
         每秒载荷发送量 (default 1000)
-  -socketorder string
-        previous initialization order - used when more than one listener was started
   -t string
         测试时长(单位: s) (default "10s")
   -timeOut string
@@ -56,7 +52,7 @@ Usage of ./MyLoadGen:
 
 ```
 
-###手动编译
+### 手动编译
 
 	需要安装好go语言环境
 ```bash
