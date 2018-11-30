@@ -24,7 +24,7 @@ type HttpPOSTRequest struct {
 	url string
 }
 
-func NewHttpRequest(url string) Caller {
+func NewPostRequest(url string) Caller {
 	return &HttpPOSTRequest{url: url}
 }
 

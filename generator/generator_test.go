@@ -12,14 +12,15 @@ var printDetail = false
 
 func TestStart(t *testing.T) {
 
-	serverAddr := "http://127.0.0.1:8080/json"
+	serverAddr := "http://127.0.0.1:8080"
 
 	// 初始化载荷发生器。
 	pset := ParamSet{
 		//Caller:     lib.NewTCPComm(serverAddr),
-		Caller:     request.NewHttpRequest(serverAddr),
-		TimeoutNS:  50 * time.Millisecond,
-		Lps:        uint32(10000),
+		//Caller:     request.NewPostRequest(serverAddr),
+		Caller:     request.NewGetRequest(serverAddr),
+		TimeoutNS:  500 * time.Millisecond,
+		Lps:        uint32(1000),
 		DurationNS: 10 * time.Second,
 		ResultCh:   make(chan *lib.CallResult, 500),
 	}
